@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center"
+    android:background="#121212">
+
+    <TextView
+        android:id="@+id/tvAppTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="VitalChain Dashboard"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="32dp"/>
+
+    <TextView
+        android:id="@+id/tvCurrentVitals"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Heart Rate: 72 bpm\nO2 Saturation: 98%\nBP: 120/80"
+        android:textSize="18sp"
+        android:textColor="#BDBDBD"
+        android:gravity="center"
+        android:layout_marginBottom="32dp"/>
+
+    <TextView
+        android:id="@+id/tvStateStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Status: IDLE"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#4CAF50"
+        android:gravity="center"
+        android:layout_marginBottom="48dp"
+        android:padding="16dp"
+        android:background="#1E1E1E"/>
+
+    <Button
+        android:id="@+id/btnTriggerEmergency"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="TRIGGER EMERGENCY (RED)"
+        android:backgroundTint="#F44336"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:padding="16dp"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
+        android:id="@+id/btnAcknowledge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ACKNOWLEDGE ALERT"
+        android:backgroundTint="#2196F3"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:padding="16dp"
+        android:visibility="gone"/>
+
+</LinearLayout>
