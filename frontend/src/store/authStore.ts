@@ -42,8 +42,6 @@ export const getRoleDashboardPath = (role: UserRole): string => {
   switch (role) {
     case 'patient':
       return '/patient/dashboard';
-    case 'doctor':
-      return '/doctor/dashboard';
     case 'family':
       return '/family/dashboard';
     default:
