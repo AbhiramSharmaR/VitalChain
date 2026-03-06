@@ -16,11 +16,7 @@ import PatientProfile from "./pages/patient/PatientProfile";
 import PatientPrescriptions from "./pages/patient/PatientPrescriptions";
 import PatientVitals from "./pages/patient/PatientVitals";
 
-// Doctor Pages
-import DoctorDashboard from "./pages/doctor/DoctorDashboard";
-import DoctorProfile from "./pages/doctor/DoctorProfile";
-import DoctorPatients from "./pages/doctor/DoctorPatients";
-import DoctorPrescriptions from "./pages/doctor/DoctorPrescriptions";
+
 
 // Family Pages
 import FamilyDashboard from "./pages/family/FamilyDashboard";
@@ -60,11 +56,7 @@ const AppContent = () => {
       <Route path="/patient/prescriptions" element={<ProtectedRoute allowedRoles={['patient']}><PatientPrescriptions /></ProtectedRoute>} />
       <Route path="/patient/vitals" element={<ProtectedRoute allowedRoles={['patient']}><PatientVitals /></ProtectedRoute>} />
 
-      {/* Doctor Routes */}
-      <Route path="/doctor/dashboard" element={<ProtectedRoute allowedRoles={['doctor']}><DoctorDashboard /></ProtectedRoute>} />
-      <Route path="/doctor/profile" element={<ProtectedRoute allowedRoles={['doctor']}><DoctorProfile /></ProtectedRoute>} />
-      <Route path="/doctor/patients" element={<ProtectedRoute allowedRoles={['doctor']}><DoctorPatients /></ProtectedRoute>} />
-      <Route path="/doctor/prescriptions" element={<ProtectedRoute allowedRoles={['doctor']}><DoctorPrescriptions /></ProtectedRoute>} />
+      
 
       {/* Family Routes */}
       <Route path="/family/dashboard" element={<ProtectedRoute allowedRoles={['family']}><FamilyDashboard /></ProtectedRoute>} />
