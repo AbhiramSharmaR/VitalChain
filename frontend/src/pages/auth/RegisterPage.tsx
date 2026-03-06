@@ -22,7 +22,6 @@ const registerSchema = z.object({
 
 const roles: { value: UserRole; label: string; description: string }[] = [
   { value: 'patient', label: 'Patient', description: 'Access your health records and prescriptions' },
-  { value: 'doctor', label: 'Doctor', description: 'Manage patients and create prescriptions' },
   { value: 'family', label: 'Family Member', description: 'Monitor your loved ones\' health' },
 ];
 

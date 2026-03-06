@@ -15,6 +15,7 @@ import { StatCard } from '@/components/common/StatCard';
 import { MainLayout } from '@/components/layouts/MainLayout';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
+import SOSButton from '@/components/SOSButton';
 
 const mockVitals = {
   heartRate: 72,
@@ -71,30 +72,36 @@ const PatientDashboard = () => {
         </motion.div>
 
         {/* Stats Grid */}
-        <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            title="Heart Rate"
-            value={`${mockVitals.heartRate} bpm`}
-            icon={<Heart className="w-6 h-6" />}
-            trend={{ value: 2, isPositive: true }}
-          />
-          <StatCard
-            title="Blood Pressure"
-            value={mockVitals.bloodPressure}
-            subtitle="mmHg"
-            icon={<Activity className="w-6 h-6" />}
-          />
-          <StatCard
-            title="Temperature"
-            value={`${mockVitals.temperature}°F`}
-            icon={<Thermometer className="w-6 h-6" />}
-          />
-          <StatCard
-            title="Oxygen Level"
-            value={`${mockVitals.oxygenLevel}%`}
-            icon={<Droplets className="w-6 h-6" />}
-            trend={{ value: 1, isPositive: true }}
-          />
+        <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          <Card className="flex items-center justify-center bg-red-50/50 border-red-200 shadow-sm transition-all hover:shadow-md h-[180px]">
+            <SOSButton />
+          </Card>
+
+          <div className="grid col-span-2 lg:col-span-4 grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard
+              title="Heart Rate"
+              value={`${mockVitals.heartRate} bpm`}
+              icon={<Heart className="w-6 h-6" />}
+              trend={{ value: 2, isPositive: true }}
+            />
+            <StatCard
+              title="Blood Pressure"
+              value={mockVitals.bloodPressure}
+              subtitle="mmHg"
+              icon={<Activity className="w-6 h-6" />}
+            />
+            <StatCard
+              title="Temperature"
+              value={`${mockVitals.temperature}°F`}
+              icon={<Thermometer className="w-6 h-6" />}
+            />
+            <StatCard
+              title="Oxygen Level"
+              value={`${mockVitals.oxygenLevel}%`}
+              icon={<Droplets className="w-6 h-6" />}
+              trend={{ value: 1, isPositive: true }}
+            />
+          </div>
         </motion.div>
 
         {/* Main Content Grid */}

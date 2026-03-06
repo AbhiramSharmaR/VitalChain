@@ -270,3 +270,95 @@
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-muted-foreground/50;
 }
+
+/* SOS Emergency Custom Styles */
+@layer components {
+  .sos-button {
+    @apply relative flex items-center justify-center rounded-full bg-red-600 text-white shadow-lg transition-transform duration-200 hover:scale-110 active:scale-95;
+    width: 120px;
+    height: 120px;
+  }
+
+  .sos-button::before {
+    content: '';
+    @apply absolute inset-0 rounded-full border-2 border-red-500 opacity-50;
+    animation: sosPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .sos-button::after {
+    content: '';
+    @apply absolute inset-[-20px] rounded-full;
+    background: radial-gradient(circle, rgba(255, 0, 0, 0.4) 0%, rgba(255, 0, 0, 0) 70%);
+    animation: sosGlow 2s ease-in-out infinite alternate;
+    z-index: -1;
+  }
+
+  .sos-banner {
+    @apply fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 py-4 bg-red-600 shadow-xl border-b-4 border-red-800;
+    animation: borderFlash 1.5s infinite alternate;
+  }
+
+  .sos-widget-glow {
+    animation: sosStatusGlow 2.5s ease-in-out infinite alternate;
+  }
+}
+
+@layer utilities {
+  .animate-heartbeat {
+    animation: heartbeat 2s ease-in-out infinite;
+  }
+  
+  .bg-sos-pulse {
+    animation: bgPulse 4s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes sosPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes sosGlow {
+  0% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.8;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes borderFlash {
+  0% {
+    border-color: rgba(153, 27, 27, 1);
+  }
+  100% {
+    border-color: rgba(239, 68, 68, 1);
+  }
+}
+
+@keyframes heartbeat {
+  0% { transform: scale(1); }
+  10% { transform: scale(1.05); }
+  20% { transform: scale(1); }
+  30% { transform: scale(1.05); }
+  40% { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes bgPulse {
+  0% { background-color: #2b0000; }
+  100% { background-color: #4a0000; }
+}
+
+@keyframes sosStatusGlow {
+  0% { filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.4)); }
+  100% { filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.9)); }
+}

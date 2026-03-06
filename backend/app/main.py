@@ -5,7 +5,7 @@ from app.api.patients import router as patients_router
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.models import APIKey, APIKeyIn, SecuritySchemeType
 from fastapi.openapi.utils import get_openapi
-from app.api.doctors import router as doctor_router
+#from app.api.doctors import router as doctor_router
 from app.api.family import router as family_router
 from app.api.prescriptions import router as prescriptions_router
 from fastapi.middleware.cors import CORSMiddleware
@@ -58,7 +58,7 @@ app.openapi = custom_openapi
 
 app.include_router(auth_router)
 app.include_router(patients_router)
-app.include_router(doctor_router)
+#app.include_router(doctor_router)
 app.include_router(family_router)
 app.include_router(prescriptions_router)
 #app.include_router(ai_router)

@@ -33,6 +33,7 @@ import HealthPrediction from "./pages/ai/HealthPrediction";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import SOSPage from "./pages/SOSPage";
 
 const queryClient = new QueryClient();
 
@@ -56,7 +57,7 @@ const AppContent = () => {
       <Route path="/patient/prescriptions" element={<ProtectedRoute allowedRoles={['patient']}><PatientPrescriptions /></ProtectedRoute>} />
       <Route path="/patient/vitals" element={<ProtectedRoute allowedRoles={['patient']}><PatientVitals /></ProtectedRoute>} />
 
-      
+
 
       {/* Family Routes */}
       <Route path="/family/dashboard" element={<ProtectedRoute allowedRoles={['family']}><FamilyDashboard /></ProtectedRoute>} />
@@ -68,6 +69,9 @@ const AppContent = () => {
       <Route path="/ai/chatbot" element={<ProtectedRoute><AIChatbot /></ProtectedRoute>} />
       <Route path="/ai/anomaly-detector" element={<ProtectedRoute><AnomalyDetector /></ProtectedRoute>} />
       <Route path="/ai/health-prediction" element={<ProtectedRoute><HealthPrediction /></ProtectedRoute>} />
+
+      {/* SOS Route */}
+      <Route path="/sos" element={<ProtectedRoute><SOSPage /></ProtectedRoute>} />
 
       {/* Catch-all */}
       <Route path="*" element={<NotFound />} />
