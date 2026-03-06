@@ -36,16 +36,6 @@ export interface PatientProfile {
   medical_history: string;
 }
 
-// Doctor Types
-export interface DoctorProfile {
-  id?: string;
-  user_id?: string;
-  specialization: string;
-  license_number: string;
-  experience_years: number;
-  hospital: string;
-  bio: string;
-}
 
 // Family Types
 export interface FamilyLink {
