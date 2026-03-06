@@ -1,5 +1,5 @@
 // User and Auth Types
-export type UserRole = 'patient' | 'doctor' | 'family';
+export type UserRole = 'patient' | 'family';
 
 export interface User {
   id: string;
