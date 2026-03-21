@@ -4,6 +4,7 @@ import { useVitals } from '@/hooks/useVitals';
 import { useMap } from '@/hooks/useMap';
 import { MapView } from '@/components/MapView';
 import { Chatbot } from '@/components/Chatbot';
+import { MainLayout } from '@/components/layouts/MainLayout';
 import { Activity, Heart, Droplets, Clock, ShieldAlert } from 'lucide-react';
 
 const SOSPage: React.FC = () => {
@@ -17,31 +18,34 @@ const SOSPage: React.FC = () => {
     const latency = useSOSStore((state) => state.latency);
 
     // Color theme based on state
-    let bgColor = 'bg-emerald-50';
-    let borderColor = 'border-emerald-200';
-    let textColor = 'text-emerald-800';
+    let bgColor = 'bg-background';
+    let borderColor = 'border-success/30';
+    let textColor = 'text-success';
     let statusMessage = "Monitoring vitals...";
+    let pulseEffect = '';
 
     if (emergencyState === 'ALERT') {
-        bgColor = 'bg-red-50 animate-pulse';
-        borderColor = 'border-red-400';
-        textColor = 'text-red-700';
+        bgColor = 'bg-destructive/5';
+        borderColor = 'border-destructive';
+        textColor = 'text-destructive';
         statusMessage = "Emergency triggered automatically";
+        pulseEffect = 'animate-pulse';
     } else if (emergencyState === 'ESCALATED') {
-        bgColor = 'bg-red-100';
-        borderColor = 'border-red-500';
-        textColor = 'text-red-800';
+        bgColor = 'bg-destructive/10';
+        borderColor = 'border-destructive';
+        textColor = 'text-destructive text-shadow-sm';
         statusMessage = "Help is on the way";
     } else if (triageLevel === 'YELLOW') {
-         bgColor = 'bg-yellow-50';
-         borderColor = 'border-yellow-300';
-         textColor = 'text-yellow-800';
+         bgColor = 'bg-warning/10';
+         borderColor = 'border-warning';
+         textColor = 'text-warning';
          statusMessage = "Abnormal condition detected";
     }
 
     return (
-        <div className={`min-h-screen p-6 transition-colors duration-1000 ${bgColor}`}>
-            <div className="max-w-6xl mx-auto space-y-6">
+        <MainLayout>
+            <div className={`p-6 transition-colors duration-1000 rounded-xl ${bgColor} ${pulseEffect}`}>
+                <div className="max-w-6xl mx-auto space-y-6">
                 
                 {/* Header */}
                 <header className="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -58,9 +62,9 @@ const SOSPage: React.FC = () => {
                     </div>
                 </header>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-6">
                     {/* Main Content Column */}
-                    <div className="lg:col-span-2 space-y-6">
+                    <div className="space-y-6">
                         
                         {/* Vitals Panel */}
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row gap-8 justify-around items-center">
@@ -124,15 +128,11 @@ const SOSPage: React.FC = () => {
                             </div>
                         )}
                     </div>
-
-                    {/* Chatbot Column */}
-                    <div className="lg:col-span-1 shadow-md rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                        <Chatbot userId={userId} />
-                    </div>
                 </div>
 
             </div>
         </div>
+        </MainLayout>
     );
 };
 

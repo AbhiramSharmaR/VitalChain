@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from app.services.emergency_state import state_manager
-from app.ai.medical_chatbot import get_chatbot_response
+from app.ai.medical_chatbot import analyze_text_query
 
 router = APIRouter(prefix="/chatbot", tags=["Chatbot"])
 
@@ -12,15 +12,17 @@ class ChatRequest(BaseModel):
 @router.post("/")
 async def chat(request: ChatRequest):
     state = state_manager.get_state(request.user_id)
-    if not state:
-        return {"error": "User state not initialized"}
-        
-    vitals = state.get("vitals", {})
-    status = state.get("status", "MONITORING")
-    latency = state.get("latency", {})
+    vitals = {}
+    status = "MONITORING"
     
-    response = get_chatbot_response(request.message, vitals, status, latency)
+    if state:
+        vitals = state.get("vitals", {})
+        status = state.get("status", "MONITORING")
+    
+    result = analyze_text_query(user_input=request.message, vitals=vitals, state=status)
     
     return {
-        "reply": response["clinical_explanation"] + " " + response["system_action_explanation"]
+        "response": result["response"],
+        "confidence": result["confidence"],
+        "predictions": result["predictions"]
     }
