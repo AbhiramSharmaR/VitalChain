@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { getSimulatedHealthData } from "@/api/iot";
 import {
   Activity,
   Calendar,
@@ -11,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useState, useEffect } from "react";
 import { StatCard } from '@/components/common/StatCard';
 import { MainLayout } from '@/components/layouts/MainLayout';
 import { Link } from 'react-router-dom';
@@ -25,6 +27,7 @@ const mockVitals = {
   respiratoryRate: 16,
 };
 
+
 const mockAppointments = [
   { id: 1, doctor: 'Dr. Sarah Johnson', specialty: 'Cardiologist', date: 'Dec 5, 2024', time: '10:00 AM' },
   { id: 2, doctor: 'Dr. Michael Chen', specialty: 'General Physician', date: 'Dec 8, 2024', time: '2:30 PM' },
@@ -38,6 +41,16 @@ const mockPrescriptions = [
 
 const PatientDashboard = () => {
   const { user } = useAuthStore();
+
+  const [iotVitals, setIotVitals] = useState<any>(null);
+  useEffect(() => {
+  const interval = setInterval(() => {
+    const data = getSimulatedHealthData();
+    setIotVitals(data);
+  }, 3000);
+
+  return () => clearInterval(interval);
+}, []);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -60,6 +73,9 @@ const PatientDashboard = () => {
         animate="visible"
         className="space-y-6"
       >
+        <div style={{ color: "green", fontWeight: "bold" }}>
+  ✅ Connected to Google Fit (Simulated)
+        </div>
         {/* Header */}
         <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -80,24 +96,24 @@ const PatientDashboard = () => {
           <div className="grid col-span-2 lg:col-span-4 grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
               title="Heart Rate"
-              value={`${mockVitals.heartRate} bpm`}
+              value={`${vitals.heartRate} bpm`}
               icon={<Heart className="w-6 h-6" />}
               trend={{ value: 2, isPositive: true }}
             />
             <StatCard
               title="Blood Pressure"
-              value={mockVitals.bloodPressure}
+              value={vitals.bloodPressure}
               subtitle="mmHg"
               icon={<Activity className="w-6 h-6" />}
             />
             <StatCard
               title="Temperature"
-              value={`${mockVitals.temperature}°F`}
+              value={`${vitals.temperature}°F`}
               icon={<Thermometer className="w-6 h-6" />}
             />
             <StatCard
               title="Oxygen Level"
-              value={`${mockVitals.oxygenLevel}%`}
+              value={`${vitals.oxygenLevel}%`}
               icon={<Droplets className="w-6 h-6" />}
               trend={{ value: 1, isPositive: true }}
             />
