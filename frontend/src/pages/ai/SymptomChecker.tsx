@@ -18,9 +18,10 @@ const commonSymptoms = [
 // Backend Response Types
 // -----------------------------
 type ApiResponse = {
-  conditions: { name: string; confidence: number }[];
-  risk_level: 'Low' | 'Medium' | 'High';
-  advice: string;
+  top_condition: string;
+  confidence: number;
+  alternatives: { name: string; confidence: number }[];
+  severity: string;
 };
 
 const SymptomChecker = () => {
@@ -213,61 +214,63 @@ const SymptomChecker = () => {
                   <div
                     className={cn(
                       'p-4 rounded-lg border',
-                      getSeverityColor(results.risk_level)
+                      getSeverityColor(results.severity)
                     )}
                   >
                     <div className="flex items-center gap-2">
-                      {results.risk_level === 'Low' ? (
+                       {results.severity.toLowerCase() === 'low' ? (
                         <CheckCircle className="w-5 h-5" />
                       ) : (
                         <AlertCircle className="w-5 h-5" />
                       )}
                       <span className="font-medium capitalize">
-                        {results.risk_level} Risk
+                        {results.severity} Risk
                       </span>
                     </div>
                   </div>
 
-                  {/* Conditions */}
+                  {/* Top Condition */}
                   <div>
-                    <p className="text-sm font-medium mb-3">
-                      Possible Conditions
-                    </p>
-                    <div className="space-y-2">
-                      {results.conditions.map((condition) => (
-                        <div key={condition.name}>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>{condition.name}</span>
-                            <span className="text-muted-foreground">
-                              {(condition.confidence * 100).toFixed(0)}%
-                            </span>
-                          </div>
-                          <div className="h-2 bg-muted rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-primary rounded-full transition-all duration-500"
-                              style={{
-                                width: `${condition.confidence * 100}%`,
-                              }}
-                            />
-                          </div>
-                        </div>
-                      ))}
+                    <p className="text-sm font-medium mb-3">Top Condition Match</p>
+                    <div className="mb-4">
+                      <div className="flex justify-between text-base mb-1 font-bold">
+                        <span>{results.top_condition}</span>
+                        <span>{results.confidence.toFixed(1)}%</span>
+                      </div>
+                      <div className="h-4 bg-muted rounded-full overflow-hidden shadow-inner">
+                        <div
+                           className={cn("h-full rounded-full transition-all duration-1000", results.severity.toLowerCase() === "high" ? "bg-red-500" : results.severity.toLowerCase() === "medium" ? "bg-yellow-500" : "bg-green-500")}
+                           style={{ width: `${results.confidence}%` }}
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Advice */}
-                  <div>
-                    <p className="text-sm font-medium mb-3">
-                      Recommendation
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {results.advice}
-                    </p>
+                    {/* Alternatives */}
+                    {results.alternatives.length > 0 && (
+                      <div className="mt-6 border-t border-border pt-4">
+                        <p className="text-sm text-muted-foreground mb-3 font-medium">Other Possibilities</p>
+                        <div className="space-y-4">
+                          {results.alternatives.map((alt) => (
+                            <div key={alt.name}>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>{alt.name}</span>
+                                <span className="text-muted-foreground">{alt.confidence.toFixed(1)}%</span>
+                              </div>
+                              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-primary/40 rounded-full transition-all duration-1000"
+                                  style={{ width: `${alt.confidence}%` }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <p className="text-xs text-muted-foreground border-t border-border pt-4">
-                    ⚠️ This is not a medical diagnosis. Please consult a
-                    healthcare professional for proper medical advice.
+                    ⚠️ This is not a medical diagnosis. Please consult a healthcare professional for proper medical advice.
                   </p>
                 </div>
               )}

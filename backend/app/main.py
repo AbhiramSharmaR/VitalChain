@@ -8,10 +8,15 @@ from fastapi.openapi.utils import get_openapi
 #from app.api.doctors import router as doctor_router
 from app.api.family import router as family_router
 from app.api.prescriptions import router as prescriptions_router
-from fastapi.middleware.cors import CORSMiddleware
+#from fastapi.middleware.cors import CORSMiddleware
 from app.api.symptoms import router as symptoms_router
 #from app.api.ai import router as ai_router
 
+from app.api.location import router as location_router
+from app.api.map import router as map_router
+from app.api.vitals import router as vitals_router
+from app.api.chatbot import router as chatbot_router
+from app.services.vital_monitor import start_monitoring, stop_monitoring
 
 app = FastAPI()
 
@@ -23,9 +28,11 @@ origins = [
 @app.on_event("startup")
 async def startup():
     await connect_to_mongo()
+    start_monitoring("test-user-123")
 
 @app.on_event("shutdown")
 async def shutdown():
+    stop_monitoring("test-user-123")
     await close_mongo_connection()
 
 def custom_openapi():
@@ -63,10 +70,14 @@ app.include_router(family_router)
 app.include_router(prescriptions_router)
 #app.include_router(ai_router)
 app.include_router(symptoms_router)
+app.include_router(location_router)
+app.include_router(map_router)
+app.include_router(vitals_router)
+app.include_router(chatbot_router)
 
 app.include_router(patients_router, prefix="/patients", tags=["Patients"])
 
-app.add_middleware(
+'''app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:8080",
@@ -74,6 +85,14 @@ app.add_middleware(
         "http://localhost:5173",
         "http://127.0.0.1:5173",
     ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)'''
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
