@@ -46,7 +46,7 @@ async def register_user(payload: RegisterUser):
     if existing:
         raise HTTPException(status_code=400, detail="User already exists")
 
-    hashed_pw = pwd_context.hash(payload.password)
+    hashed_pw = pwd_context.hash(payload.password[:72])
 
     new_user = {
         "email": payload.email,
