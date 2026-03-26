@@ -57,33 +57,44 @@ const AIChatbot = () => {
     setInput('');
     setIsLoading(true);
 
-    // Simulate AI response
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const res = await fetch('http://localhost:8000/chatbot/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: 'user-123',
+          message: text,
+        }),
+      });
 
-    const aiResponses: Record<string, string> = {
-      default: "I understand your concern. While I can provide general health information, I recommend consulting with a healthcare professional for personalized medical advice. Is there anything specific about this topic you'd like me to explain?",
-      diabetes: "Diabetes is a metabolic disease that causes high blood sugar. Common symptoms include:\n\n• Increased thirst and frequent urination\n• Unexplained weight loss\n• Fatigue and weakness\n• Blurred vision\n• Slow-healing sores\n\nIf you're experiencing these symptoms, please consult a healthcare provider for proper diagnosis and treatment.",
-      sleep: "Here are some tips to improve your sleep quality:\n\n1. **Maintain a schedule** - Go to bed and wake up at the same time daily\n2. **Create a restful environment** - Keep your room dark, quiet, and cool\n3. **Limit screen time** - Avoid phones and computers 1 hour before bed\n4. **Watch your diet** - Avoid caffeine and large meals before bedtime\n5. **Exercise regularly** - But not too close to bedtime\n\nWould you like more specific advice?",
-      cholesterol: "Foods that can help lower cholesterol:\n\n• **Oats and whole grains** - Rich in soluble fiber\n• **Fatty fish** - Salmon, mackerel (omega-3 fatty acids)\n• **Nuts** - Almonds, walnuts in moderation\n• **Olive oil** - Use instead of butter\n• **Fruits and vegetables** - Especially apples, grapes, strawberries\n• **Beans and legumes** - Great source of soluble fiber\n\nRemember to combine healthy eating with regular exercise for best results!",
-      stress: "Here are effective stress management techniques:\n\n1. **Deep breathing exercises** - Try 4-7-8 breathing technique\n2. **Regular physical activity** - Even a 10-minute walk helps\n3. **Mindfulness meditation** - Start with 5 minutes daily\n4. **Adequate sleep** - Aim for 7-9 hours\n5. **Social connections** - Talk to friends and family\n6. **Time management** - Prioritize tasks and set boundaries\n\nWould you like me to explain any of these techniques in detail?",
-    };
+      if (!res.ok) {
+        throw new Error(`API error: ${res.status}`);
+      }
 
-    let response = aiResponses.default;
-    const lowerText = text.toLowerCase();
-    if (lowerText.includes('diabetes')) response = aiResponses.diabetes;
-    else if (lowerText.includes('sleep')) response = aiResponses.sleep;
-    else if (lowerText.includes('cholesterol')) response = aiResponses.cholesterol;
-    else if (lowerText.includes('stress')) response = aiResponses.stress;
+      const data = await res.json();
 
-    const aiMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      role: 'assistant',
-      content: response,
-      timestamp: new Date(),
-    };
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: data.response || "Sorry, I received an empty response.",
+        timestamp: new Date(),
+      };
 
-    setMessages((prev) => [...prev, aiMessage]);
-    setIsLoading(false);
+      setMessages((prev) => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('Chatbot API error:', error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: "I'm having trouble connecting to my servers right now. Please try again later.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -101,8 +112,8 @@ const AIChatbot = () => {
           <p className="text-muted-foreground">Get answers to your health questions</p>
         </div>
 
-        <Card className="flex-1 flex flex-col overflow-hidden">
-          <CardContent className="flex-1 flex flex-col p-0">
+        <Card className="flex-1 flex flex-col overflow-hidden min-h-0 border-border/50 shadow-sm">
+          <CardContent className="flex-1 flex flex-col p-0 overflow-hidden min-h-0">
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.map((message) => (

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { MainLayout } from '@/components/layouts/MainLayout';
 import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/store/authStore';
 
 const commonSymptoms = [
   'Headache', 'Fever', 'Cough', 'Fatigue', 'Nausea',
@@ -22,9 +23,13 @@ type ApiResponse = {
   confidence: number;
   alternatives: { name: string; confidence: number }[];
   severity: string;
+  advice: string;
+  sos_triggered: boolean;
+  emergency_status: string;
 };
 
 const SymptomChecker = () => {
+  const { user } = useAuthStore();
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [additionalInfo, setAdditionalInfo] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -59,6 +64,7 @@ const SymptomChecker = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          user_id: user?.id,
           symptoms: normalizedSymptoms,
           description: additionalInfo,
         }),
@@ -227,6 +233,11 @@ const SymptomChecker = () => {
                         {results.severity} Risk
                       </span>
                     </div>
+                    {results.sos_triggered && (
+                      <p className="text-sm mt-2 font-medium">
+                        SOS triggered ({results.emergency_status})
+                      </p>
+                    )}
                   </div>
 
                   {/* Top Condition */}
@@ -268,6 +279,14 @@ const SymptomChecker = () => {
                       </div>
                     )}
                   </div>
+
+                  {/* Advice */}
+                  {results.advice && (
+                    <div className="p-4 rounded-lg border bg-muted/30">
+                      <p className="text-sm font-medium mb-2">Advice</p>
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">{results.advice}</p>
+                    </div>
+                  )}
 
                   <p className="text-xs text-muted-foreground border-t border-border pt-4">
                     ⚠️ This is not a medical diagnosis. Please consult a healthcare professional for proper medical advice.

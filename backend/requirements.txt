@@ -14,3 +14,12 @@ python-multipart
 bcrypt
 apscheduler
 pytz
+
+# --- AI / OCR (SnoreBot + Flan-T5) ---
+torch
+transformers
+sentence-transformers
+numpy
+pillow
+pytesseract
+scikit-learn

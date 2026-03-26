@@ -1,8 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from datetime import datetime
 from app.db.mongodb import get_db
 from app.core.deps import get_current_user
+from typing import Optional, List
+
+from app.ai.medical_chatbot import analyze_prescription
 
 router = APIRouter(prefix="/prescriptions", tags=["Prescriptions"])
 
@@ -18,6 +21,39 @@ class PrescriptionUpdate(BaseModel):
     diagnosis: str | None = None
     medicines: list[str] | None = None
     notes: str | None = None
+
+
+class SnoreBotPrediction(BaseModel):
+    label: str
+    nli_score: float
+    minilm_sim: float
+    clin_sim: float
+    combined_score: float
+
+
+class AnalyzePrescriptionResponse(BaseModel):
+    ocr_text: str
+    symptom_text: str
+    predictions: List[SnoreBotPrediction]
+    top_label: Optional[str]
+    confidence: float
+    generated_advice: str
+
+
+@router.post("/ai/prescription/analyze", response_model=AnalyzePrescriptionResponse)
+async def analyze_prescription_image(file: UploadFile = File(...)):
+    """
+    Option B endpoint, implemented inside this existing module without changing app wiring.
+    Upload a printed prescription/report image to OCR + categorize + generate safe advice.
+    """
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Please upload an image file.")
+    try:
+        data = await file.read()
+        return analyze_prescription(data)
+    except Exception as e:
+        # Keep error message user-friendly; dependency errors are raised by analyze_prescription.
+        raise HTTPException(status_code=503, detail=str(e))
 
 
 # -----------------------------------------------------------
