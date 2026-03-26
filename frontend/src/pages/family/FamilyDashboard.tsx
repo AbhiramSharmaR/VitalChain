@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users,
   Heart,
@@ -17,6 +18,9 @@ import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import SOSAlertBanner from '@/components/SOSAlertBanner';
 import SOSEmergencyStatus from '@/components/SOSEmergencyStatus';
+import { useSOSStore } from '@/store/sosStore';
+import { AnimatedEmergencyMap } from '@/pages/SOSPage';
+import { MapPinOff } from 'lucide-react';
 
 const mockLinkedPatients = [
   { id: 1, name: 'Mary Smith', relation: 'Mother', age: 68, condition: 'Diabetes', lastUpdate: '2 hours ago', status: 'stable' },
@@ -44,6 +48,40 @@ const getAlertColor = (type: string) => {
 
 const FamilyDashboard = () => {
   const { user } = useAuthStore();
+  const { incomingEmergency, activeEmergencyDetails, acceptEmergency, ignoreEmergency } = useSOSStore();
+
+  const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'granted' | 'denied' | 'error' | 'unsupported'>('idle');
+  const [coords, setCoords] = useState<{lat: number; lng: number} | null>(null);
+
+  const requestLocation = () => {
+        if (!('geolocation' in navigator)) {
+            setLocationStatus('unsupported');
+            return;
+        }
+
+        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'https:') {
+            setLocationStatus('unsupported');
+            return;
+        }
+
+        setLocationStatus('loading');
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                setCoords({ lat: position.coords.latitude, lng: position.coords.longitude });
+                setLocationStatus('granted');
+            },
+            (error) => {
+                setLocationStatus(error.code === 1 ? 'denied' : 'error');
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+  };
+
+  useEffect(() => {
+    if (incomingEmergency && activeEmergencyDetails && locationStatus === 'idle') {
+      requestLocation();
+    }
+  }, [incomingEmergency, activeEmergencyDetails, locationStatus]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -62,6 +100,94 @@ const FamilyDashboard = () => {
     <>
       <SOSAlertBanner />
       <SOSEmergencyStatus />
+      
+      {/* Receiver Overlay */}
+      <AnimatePresence>
+      {incomingEmergency && activeEmergencyDetails && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0, transition: { duration: 0.3 } }}
+          className="fixed inset-0 z-[100] bg-red-600/95 backdrop-blur-md flex flex-col items-center justify-center text-white p-4 md:p-6 text-center"
+        >
+          <motion.div 
+            initial={{ scale: 0.9, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            className="max-w-5xl w-full bg-red-800/80 p-6 md:p-8 rounded-2xl border-4 border-red-400 shadow-2xl backdrop-blur-md"
+          >
+            <h1 className="text-3xl md:text-5xl font-black mb-2 uppercase tracking-widest text-red-50 drop-shadow-lg">Emergency SOS</h1>
+            <p className="text-lg md:text-xl font-semibold mb-6 text-red-100">Immediate Response Required</p>
+            
+            <div className="flex flex-col md:flex-row gap-6 mb-2">
+               {/* Left Column: Details & Actions */}
+               <div className="flex-1 flex flex-col justify-between space-y-4">
+                  <div className="bg-black/20 p-5 rounded-xl text-left space-y-3 shadow-inner border border-white/10">
+                    <p className="flex items-center gap-3 text-lg"><span className="opacity-70 w-20">Patient:</span> <span className="font-bold">{activeEmergencyDetails.patientName}</span></p>
+                    <p className="flex items-center gap-3 text-lg"><span className="opacity-70 w-20">Location:</span> <span className="font-bold">{activeEmergencyDetails.location}</span></p>
+                    <p className="flex items-center gap-3 text-lg"><span className="opacity-70 w-20">ID:</span> <span className="font-bold font-mono text-white/80">{activeEmergencyDetails.id}</span></p>
+                  </div>
+
+                  <div className="space-y-4 mt-auto">
+                    {locationStatus !== 'granted' ? (
+                        <div className="w-full bg-red-900 border-2 border-red-400 p-4 rounded-xl shadow-inner text-center">
+                            <h3 className="text-xl font-bold flex items-center justify-center gap-2 text-white">
+                                <MapPinOff className="w-5 h-5 text-red-300"/> Receiver Location Required
+                            </h3>
+                            <p className="mt-2 text-sm text-red-200">
+                                You cannot accept an emergency without sharing your location to coordinate tracking.{locationStatus === 'denied' ? ' Check permissions.' : ''}
+                            </p>
+                            <button 
+                                onClick={requestLocation} 
+                                disabled={locationStatus === 'loading'}
+                                className="mt-3 w-full py-3 rounded-xl bg-white text-red-800 font-bold uppercase transition-all shadow-md active:scale-95 disabled:opacity-50"
+                            >
+                                {locationStatus === 'loading' ? 'Requesting...' : 'Enable Location'}
+                            </button>
+                        </div>
+                    ) : (
+                        <button 
+                          onClick={() => {
+                            if (coords) {
+                               const mapData = useSOSStore.getState().mapData;
+                               useSOSStore.getState().setMapData({
+                                   ...mapData,
+                                   responder_location: coords
+                               });
+                            }
+                            acceptEmergency();
+                            useSOSStore.getState().setResponderInfo({ name: 'Family Member', status: 'En route' });
+                          }}
+                          className="w-full py-4 rounded-xl bg-white text-red-700 text-xl font-black uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(255,255,255,0.4)] hover:shadow-[0_0_30px_rgba(255,255,255,0.7)] active:scale-95 animate-[pulse_2s_ease-in-out_infinite]"
+                        >
+                          Accept & Respond
+                        </button>
+                    )}
+                    
+                    <button 
+                      onClick={ignoreEmergency}
+                      className="w-full py-3 rounded-xl bg-black/30 hover:bg-black/40 text-white/90 font-bold uppercase transition-all shadow-md active:scale-95 border border-white/10"
+                    >
+                      Ignore (Escalate further)
+                    </button>
+                  </div>
+               </div>
+
+               {/* Right Column: Live Map */}
+               <div className="flex-1 h-64 md:h-auto min-h-[300px] rounded-xl overflow-hidden border-2 border-red-400 shadow-inner bg-black/20 relative">
+                    <AnimatedEmergencyMap 
+                        patientLoc={{ lat: 37.7749, lng: -122.4194 }}
+                        responderLoc={{ lat: 37.7649, lng: -122.4094 }}
+                        isActive={true}
+                    />
+               </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+      </AnimatePresence>
+
       <MainLayout>
         <motion.div
           variants={containerVariants}
