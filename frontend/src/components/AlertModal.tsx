@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
+import apiClient from '@/api/client';
 
 export const AlertModal: React.FC = () => {
     const { user } = useAuthStore();
@@ -32,10 +33,8 @@ export const AlertModal: React.FC = () => {
     const handleAcknowledge = async () => {
         if (!alert) return;
         try {
-            await fetch(`http://localhost:8000/alerts/${alert.id}/acknowledge`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ acknowledged_by: user?.id || 'responder-1' })
+            await apiClient.post(`/alerts/${alert.id}/acknowledge`, {
+                acknowledged_by: user?.id || 'responder-1',
             });
             setAlert(null);
         } catch (e) {

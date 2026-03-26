@@ -33,7 +33,8 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ token: state.token, user: state.user, isAuthenticated: state.isAuthenticated }),
+      // Persist only the JWT token; keep `user` in memory (rehydrate from `/auth/me`).
+      partialize: (state) => ({ token: state.token, isAuthenticated: state.isAuthenticated }),
     }
   )
 );

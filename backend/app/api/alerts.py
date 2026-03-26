@@ -4,11 +4,12 @@ import uuid
 import datetime
 from app.services.escalation_service import escalation_service
 from app.api.ws import manager
+from fastapi import Depends
+from app.core.deps import get_current_user
 
 router = APIRouter(prefix="/alerts", tags=["Alerts"])
 
 class TriggerPayload(BaseModel):
-    user_id: str
     reason: str = "SOS Button"
 
 class AcknowledgePayload(BaseModel):
@@ -18,11 +19,12 @@ class AcknowledgePayload(BaseModel):
 ALERTS_DB = {}
 
 @router.post("/trigger")
-async def trigger_alert(payload: TriggerPayload):
+async def trigger_alert(payload: TriggerPayload, current_user: dict = Depends(get_current_user)):
     alert_id = str(uuid.uuid4())
+    user_id = current_user["user_id"]
     alert_data = {
         "id": alert_id,
-        "user_id": payload.user_id,
+        "user_id": user_id,
         "reason": payload.reason,
         "status": "ESCALATING",
         "triage_level": "RED", # Automatically elevate to RED on trigger
@@ -31,13 +33,13 @@ async def trigger_alert(payload: TriggerPayload):
     ALERTS_DB[alert_id] = alert_data
 
     # Broadcast to WebSocket clients (e.g., Doctor/Responder Dashboard)
-    await manager.broadcast({
-        "event": "alert_triggered",
-        "data": alert_data
-    })
+    # await manager.broadcast({
+    #     "event": "alert_triggered",
+    #     "data": alert_data
+    # })
 
     # Start Escalation Service Process
-    escalation_service.start_escalation(alert_id, payload.user_id, alert_data)
+    escalation_service.start_escalation(alert_id, user_id, alert_data)
     
     return {"message": "Alert triggered successfully", "alert": alert_data}
 
@@ -53,9 +55,9 @@ async def acknowledge_alert(alert_id: str, payload: AcknowledgePayload):
     escalation_service.acknowledge_alert(alert_id, payload.acknowledged_by)
     
     # Broadcast ack to WS clients
-    await manager.broadcast({
-        "event": "alert_acknowledged",
-        "data": ALERTS_DB[alert_id]
-    })
+    # await manager.broadcast({
+    #     "event": "alert_acknowledged",
+    #     "data": ALERTS_DB[alert_id]
+    # })
     
     return {"message": "Alert acknowledged", "status": "success"}

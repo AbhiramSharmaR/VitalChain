@@ -4,6 +4,7 @@ from jose import jwt, JWTError
 from app.db.mongodb import get_db
 from app.config import settings
 from bson import ObjectId
+from typing import Optional
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -11,7 +12,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-        user_id: str = payload.get("sub")
+        # Prefer explicit fields; keep `sub` as backward compatibility.
+        user_id: Optional[str] = payload.get("user_id") or payload.get("sub")
+        token_role: Optional[str] = payload.get("role")
 
         if user_id is None:
             raise HTTPException(status_code=401, detail="Invalid token")
@@ -28,8 +31,11 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 
     # Convert DB result into correct response structure
     return {
+        # `user_id` is the canonical identity field used across the backend.
+        "user_id": str(user["_id"]),
+        # `id` is kept for backward compatibility with parts of the frontend/types.
         "id": str(user["_id"]),
         "email": user["email"],
-        "full_name": user["full_name"],
-        "role": user["role"],
+        "full_name": user.get("full_name", ""),
+        "role": user.get("role") or token_role,
     }

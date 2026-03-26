@@ -18,6 +18,7 @@ from app.api.vitals import router as vitals_router
 from app.api.chatbot import router as chatbot_router
 from app.api.ws import router as ws_router
 from app.api.alerts import router as alerts_router
+from app.api.sms import router as sms_router
 from app.services.vital_monitor import start_monitoring, stop_monitoring
 
 app = FastAPI()
@@ -76,6 +77,7 @@ app.include_router(vitals_router)
 app.include_router(chatbot_router)
 app.include_router(ws_router)
 app.include_router(alerts_router)
+app.include_router(sms_router)
 
 app.include_router(patients_router, prefix="/patients", tags=["Patients"])
 

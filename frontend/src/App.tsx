@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
+import { authApi } from "@/api/auth";
 
 // Auth Pages
 import LoginPage from "./pages/auth/LoginPage";
@@ -38,11 +39,25 @@ import SOSPage from "./pages/SOSPage";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  const { setLoading } = useAuthStore();
+  const { token, user, isAuthenticated, setLoading, setUser, logout } = useAuthStore();
 
   useEffect(() => {
     setLoading(false);
   }, [setLoading]);
+
+  useEffect(() => {
+    // Rehydrate user from `/auth/me` if we have a token but no in-memory user.
+    if (isAuthenticated && token && !user) {
+      setLoading(true);
+      authApi
+        .getCurrentUser()
+        .then((u) => setUser(u))
+        .catch(() => {
+          logout();
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [isAuthenticated, token, user, setUser, logout, setLoading]);
 
   return (
     <Routes>

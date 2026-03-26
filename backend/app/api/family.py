@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
+from bson import ObjectId
 from app.db.mongodb import get_db
 from app.core.deps import get_current_user
 
@@ -50,6 +51,13 @@ async def create_family_link(
     }
 
     await db.family_links.insert_one(doc)
+
+    # Keep the denormalized field in sync for SOS escalation lookups.
+    # linked_patient_id is a stringified ObjectId.
+    await db.users.update_one(
+        {"_id": ObjectId(family_id)},
+        {"$set": {"linked_patient_id": patient_id}},
+    )
     return {"message": "Family link created successfully"}
 
 
@@ -75,8 +83,11 @@ async def get_my_linked_patients(
 
     patients = []
     for link in links:
-        patient_user = await db.users.find_one({"_id": link["patient_user_id"]})
-        # If you stored _id as ObjectId, you’d need to convert; keeping it simple for now
+        # family_links stores `patient_user_id` as a stringified ObjectId.
+        patient_user_id = link["patient_user_id"]
+        patient_user = await db.users.find_one(
+            {"_id": ObjectId(patient_user_id)} if len(str(patient_user_id)) == 24 else {"_id": patient_user_id}
+        )
         if not patient_user:
             continue
 

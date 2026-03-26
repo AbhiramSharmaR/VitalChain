@@ -122,9 +122,9 @@ const LoginPage = () => {
 
         <div className="relative flex gap-8">
           {[
-            { label: 'Patients' },
-            { label: 'Doctors'},
-            { label: 'Consultations' },
+            { label: 'Patients', value: '1K+' },
+            { label: 'Doctors', value: '200+' },
+            { label: 'Consultations', value: '5K+' },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}

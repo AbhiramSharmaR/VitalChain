@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Stethoscope, Mail, Lock, User, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Stethoscope, Mail, Lock, User, Loader2, Phone, MapPin, Building, Home as HomeIcon } from 'lucide-react';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,23 @@ const registerSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   full_name: z.string().min(2, 'Name must be at least 2 characters'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  role: z.enum(['patient', 'doctor', 'family']),
+  role: z.enum(['patient', 'family']),
+  phone_number: z.string().min(10, 'Valid mobile is required'),
+  flat_number: z.string().min(1, 'Flat required'),
+  apartment_name: z.string().min(1, 'Apartment required'),
+  address: z.string().min(4, 'Full address required'),
+  patient_email: z.string().email('Please enter a valid patient email').optional(),
+  patient_phone: z.string().min(10, 'Valid patient phone is required').optional(),
+}).superRefine((values, ctx) => {
+  if (values.role === 'family') {
+    if (!values.patient_email && !values.patient_phone) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['patient_email'],
+        message: 'Family members must provide patient email or phone',
+      });
+    }
+  }
 });
 
 const roles: { value: UserRole; label: string; description: string }[] = [
@@ -30,6 +46,12 @@ const RegisterPage = () => {
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<UserRole>('patient');
+  const [phone, setPhone] = useState('');
+  const [flat, setFlat] = useState('');
+  const [apartment, setApartment] = useState('');
+  const [address, setAddress] = useState('');
+  const [patientEmail, setPatientEmail] = useState('');
+  const [patientPhone, setPatientPhone] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -48,6 +70,12 @@ const RegisterPage = () => {
       full_name: fullName,
       password,
       role,
+      phone_number: phone,
+      flat_number: flat,
+      apartment_name: apartment,
+      address,
+      patient_email: patientEmail || undefined,
+      patient_phone: patientPhone || undefined,
     });
 
     if (!result.success) {
@@ -63,12 +91,20 @@ const RegisterPage = () => {
     setIsLoading(true);
 
     try {
-      // Backend expects: email, full_name, password, role
+      // Backend expects: email, full_name, password, role, etc
       const response = await authApi.register({
         email,
         full_name: fullName,
         password,
         role,
+        phone_number: phone,
+        flat_number: flat,
+        apartment_name: apartment,
+        address,
+        ...(role === 'family' ? {
+          patient_email: patientEmail || undefined,
+          patient_phone: patientPhone || undefined,
+        } : {}),
       });
 
       // Save JWT
@@ -205,6 +241,108 @@ const RegisterPage = () => {
                   </div>
                   {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
                 </div>
+
+                {/* SMS & Location Fields Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Phone Number</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        placeholder="+1 234 567 8900"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="pl-10"
+                        disabled={isLoading}
+                      />
+                    </div>
+                    {errors.phone_number && <p className="text-sm text-destructive">{errors.phone_number}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Flat Number</Label>
+                    <div className="relative">
+                      <HomeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        placeholder="A-101"
+                        value={flat}
+                        onChange={(e) => setFlat(e.target.value)}
+                        className="pl-10"
+                        disabled={isLoading}
+                      />
+                    </div>
+                    {errors.flat_number && <p className="text-sm text-destructive">{errors.flat_number}</p>}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Apartment</Label>
+                    <div className="relative">
+                      <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Sunshine Apts"
+                        value={apartment}
+                        onChange={(e) => setApartment(e.target.value)}
+                        className="pl-10"
+                        disabled={isLoading}
+                      />
+                    </div>
+                    {errors.apartment_name && <p className="text-sm text-destructive">{errors.apartment_name}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Address</Label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        placeholder="123 Main St"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        className="pl-10"
+                        disabled={isLoading}
+                      />
+                    </div>
+                    {errors.address && <p className="text-sm text-destructive">{errors.address}</p>}
+                  </div>
+                </div>
+
+                {/* Link patient for family members */}
+                {role === 'family' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Patient Email</Label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <Input
+                            placeholder="patient@example.com"
+                            value={patientEmail}
+                            onChange={(e) => setPatientEmail(e.target.value)}
+                            className="pl-10"
+                            disabled={isLoading}
+                          />
+                        </div>
+                        {errors.patient_email && <p className="text-sm text-destructive">{errors.patient_email}</p>}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Patient Phone</Label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <Input
+                            placeholder="+1 234 567 8900"
+                            value={patientPhone}
+                            onChange={(e) => setPatientPhone(e.target.value)}
+                            className="pl-10"
+                            disabled={isLoading}
+                          />
+                        </div>
+                        {errors.patient_phone && <p className="text-sm text-destructive">{errors.patient_phone}</p>}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Password */}
                 <div className="space-y-2">

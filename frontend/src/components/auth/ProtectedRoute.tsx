@@ -28,6 +28,18 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // If we have role-restricted routes but user isn't in memory yet, wait.
+  if (allowedRoles && isAuthenticated && !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+          <p className="text-muted-foreground">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Check role-based access if roles are specified
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
     // Redirect to user's appropriate dashboard

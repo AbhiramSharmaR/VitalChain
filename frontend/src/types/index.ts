@@ -23,6 +23,12 @@ export interface RegisterCredentials {
   full_name: string;
   password: string;
   role: UserRole;
+  phone_number: string;
+  flat_number: string;
+  apartment_name: string;
+  address: string;
+  patient_email?: string;
+  patient_phone?: string;
 }
 
 // Patient Types
