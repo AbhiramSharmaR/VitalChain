@@ -16,6 +16,8 @@ from app.api.location import router as location_router
 from app.api.map import router as map_router
 from app.api.vitals import router as vitals_router
 from app.api.chatbot import router as chatbot_router
+from app.api.ws import router as ws_router
+from app.api.alerts import router as alerts_router
 from app.services.vital_monitor import start_monitoring, stop_monitoring
 
 app = FastAPI()
@@ -28,11 +30,9 @@ origins = [
 @app.on_event("startup")
 async def startup():
     await connect_to_mongo()
-    start_monitoring("test-user-123")
 
 @app.on_event("shutdown")
 async def shutdown():
-    stop_monitoring("test-user-123")
     await close_mongo_connection()
 
 def custom_openapi():
@@ -74,6 +74,8 @@ app.include_router(location_router)
 app.include_router(map_router)
 app.include_router(vitals_router)
 app.include_router(chatbot_router)
+app.include_router(ws_router)
+app.include_router(alerts_router)
 
 app.include_router(patients_router, prefix="/patients", tags=["Patients"])
 

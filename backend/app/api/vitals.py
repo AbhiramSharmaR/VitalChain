@@ -1,20 +1,21 @@
 from fastapi import APIRouter
 from app.services.emergency_state import state_manager
+from app.services.vitals_service import vitals_service
+from app.services.triage_service import determine_triage_level
 
 router = APIRouter(prefix="/vitals", tags=["Vitals"])
 
 @router.get("/{user_id}")
 async def get_vitals(user_id: str):
+    vitals = vitals_service.get_vitals(user_id)
+    triage = determine_triage_level(vitals)
+    vitals["triage"] = triage
+    
     state = state_manager.get_state(user_id)
-    if not state:
-        return {"error": "User state not initialized"}
-    v = state["vitals"]
     return {
-        "heart_rate": v.get("heart_rate"),
-        "spo2": v.get("spo2"),
-        "triage": v.get("triage"),
-        "state": state["status"],
-        "emergency_id": state["emergency_id"]
+        **vitals,
+        "state": state["status"] if state else "MONITORING",
+        "emergency_id": state["emergency_id"] if state else None
     }
 
 @router.post("/stream")

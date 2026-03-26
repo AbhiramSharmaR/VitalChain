@@ -7,9 +7,18 @@ const SOSButton: React.FC = () => {
     const { triggerSOS, isSOSActive } = useSOSStore();
     const navigate = useNavigate();
 
-    const handleSOSClick = () => {
+    const handleSOSClick = async () => {
         if (!isSOSActive) {
             triggerSOS('HIGH');
+            try {
+                await fetch('http://localhost:8000/alerts/trigger', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: 'test-user-123', reason: "SOS Button Pressed" })
+                });
+            } catch (error) {
+                console.error("Failed to trigger backend alert from SOS Button", error);
+            }
             navigate('/sos');
         }
     };

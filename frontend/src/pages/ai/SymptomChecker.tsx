@@ -218,7 +218,7 @@ const SymptomChecker = () => {
                     )}
                   >
                     <div className="flex items-center gap-2">
-                       {results.severity.toLowerCase() === 'low' ? (
+                      {results.severity.toLowerCase() === 'low' ? (
                         <CheckCircle className="w-5 h-5" />
                       ) : (
                         <AlertCircle className="w-5 h-5" />
@@ -239,8 +239,8 @@ const SymptomChecker = () => {
                       </div>
                       <div className="h-4 bg-muted rounded-full overflow-hidden shadow-inner">
                         <div
-                           className={cn("h-full rounded-full transition-all duration-1000", results.severity.toLowerCase() === "high" ? "bg-red-500" : results.severity.toLowerCase() === "medium" ? "bg-yellow-500" : "bg-green-500")}
-                           style={{ width: `${results.confidence}%` }}
+                          className={cn("h-full rounded-full transition-all duration-1000", results.severity.toLowerCase() === "high" ? "bg-red-500" : results.severity.toLowerCase() === "medium" ? "bg-yellow-500" : "bg-green-500")}
+                          style={{ width: `${results.confidence}%` }}
                         />
                       </div>
                     </div>

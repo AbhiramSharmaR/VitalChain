@@ -17,13 +17,8 @@ import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import SOSButton from '@/components/SOSButton';
 
-const mockVitals = {
-  heartRate: 72,
-  bloodPressure: '120/80',
-  temperature: 98.6,
-  oxygenLevel: 98,
-  respiratoryRate: 16,
-};
+import { AlertModal } from '@/components/AlertModal';
+import { useEffect, useState } from 'react';
 
 const mockAppointments = [
   { id: 1, doctor: 'Dr. Sarah Johnson', specialty: 'Cardiologist', date: 'Dec 5, 2024', time: '10:00 AM' },
@@ -38,6 +33,35 @@ const mockPrescriptions = [
 
 const PatientDashboard = () => {
   const { user } = useAuthStore();
+  const [vitals, setVitals] = useState({
+    heartRate: '--',
+    bloodPressure: '--/--',
+    temperature: '--',
+    oxygenLevel: '--',
+  });
+
+  useEffect(() => {
+    const fetchVitals = async () => {
+      try {
+        const res = await fetch('http://localhost:8000/vitals/' + (user?.id || 'test-user-123'));
+        if (res.ok) {
+          const data = await res.json();
+          setVitals({
+            heartRate: data.heart_rate,
+            bloodPressure: data.blood_pressure,
+            temperature: data.temperature,
+            oxygenLevel: data.spo2,
+          });
+        }
+      } catch (e) {
+        console.error("Vitals fetch error", e);
+      }
+    };
+
+    fetchVitals();
+    const interval = setInterval(fetchVitals, 3000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -54,6 +78,7 @@ const PatientDashboard = () => {
 
   return (
     <MainLayout>
+      <AlertModal />
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -80,24 +105,24 @@ const PatientDashboard = () => {
           <div className="grid col-span-2 lg:col-span-4 grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
               title="Heart Rate"
-              value={`${mockVitals.heartRate} bpm`}
+              value={`${vitals.heartRate} bpm`}
               icon={<Heart className="w-6 h-6" />}
               trend={{ value: 2, isPositive: true }}
             />
             <StatCard
               title="Blood Pressure"
-              value={mockVitals.bloodPressure}
+              value={vitals.bloodPressure}
               subtitle="mmHg"
               icon={<Activity className="w-6 h-6" />}
             />
             <StatCard
               title="Temperature"
-              value={`${mockVitals.temperature}°F`}
+              value={`${vitals.temperature}°F`}
               icon={<Thermometer className="w-6 h-6" />}
             />
             <StatCard
               title="Oxygen Level"
-              value={`${mockVitals.oxygenLevel}%`}
+              value={`${vitals.oxygenLevel}%`}
               icon={<Droplets className="w-6 h-6" />}
               trend={{ value: 1, isPositive: true }}
             />
